@@ -7,9 +7,9 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model inventario_chimbarongo {
+model inventario {
   id                  Int         @id @default(autoincrement())
+  planta              String      @db.VarChar(50)
   title               String      @db.VarChar(100)
   nombre_material     String?     @db.VarChar(300)
   unidad_medida       String?     @db.VarChar(50)
@@ -29,34 +29,9 @@ model inventario_chimbarongo {
   materiales          materiales? @relation(fields: [material_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   ubicacion_ref       ubicacion?  @relation(fields: [ubicacion_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@index([fecha_inventario], map: "idx_inventario_chimbarongo_fecha")
-  @@index([title], map: "idx_inventario_chimbarongo_material")
-}
-
-/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model inventario_rancagua {
-  id                  Int         @id @default(autoincrement())
-  title               String      @db.VarChar(100)
-  nombre_material     String?     @db.VarChar(300)
-  unidad_medida       String?     @db.VarChar(50)
-  cod_nombre          String?     @db.VarChar(400)
-  fecha_inventario    DateTime    @db.Date
-  pallets             Int?        @default(0)
-  stock               Decimal     @db.Decimal(10, 2)
-  bodega              String?     @db.VarChar(100)
-  ubicacion           String?     @db.VarChar(100)
-  lote                String?     @db.VarChar(100)
-  condicion_armado    String?     @db.VarChar(50)
-  contado_por         String      @db.VarChar(100)
-  fecha_creacion      DateTime?   @default(now()) @db.Timestamp(6)
-  fecha_actualizacion DateTime?   @default(now()) @db.Timestamp(6)
-  material_id         Int?
-  ubicacion_id        Int?
-  materiales          materiales? @relation(fields: [material_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  ubicacion_ref       ubicacion?  @relation(fields: [ubicacion_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  @@index([fecha_inventario], map: "idx_inventario_rancagua_fecha")
-  @@index([title], map: "idx_inventario_rancagua_material")
+  @@index([fecha_inventario], map: "idx_inventario_fecha")
+  @@index([title], map: "idx_inventario_material")
+  @@index([planta], map: "idx_inventario_planta")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -85,8 +60,7 @@ model materiales {
   activo                     Boolean?                     @default(true)
   fecha_creacion             DateTime?                    @default(now()) @db.Timestamp(6)
   fecha_actualizacion        DateTime?                    @default(now()) @db.Timestamp(6)
-  inventario_chimbarongo     inventario_chimbarongo[]
-  inventario_rancagua        inventario_rancagua[]
+  inventario                 inventario[]
   trazabilidad_materiales_r9 trazabilidad_materiales_r9[]
 
   @@index([clasificacion], map: "idx_materiales_clasificacion")
@@ -207,8 +181,7 @@ model ubicacion {
   activo                                                                                Boolean?                     @default(true)
   fecha_creacion                                                                        DateTime?                    @default(now()) @db.Timestamp(6)
   fecha_actualizacion                                                                   DateTime?                    @default(now()) @db.Timestamp(6)
-  inventario_chimbarongo                                                                inventario_chimbarongo[]
-  inventario_rancagua                                                                   inventario_rancagua[]
+  inventario                                                                            inventario[]
   trazabilidad_materiales_r9_trazabilidad_materiales_r9_ubicacion_destino_idToubicacion trazabilidad_materiales_r9[] @relation("trazabilidad_materiales_r9_ubicacion_destino_idToubicacion")
   trazabilidad_materiales_r9_trazabilidad_materiales_r9_ubicacion_origen_idToubicacion  trazabilidad_materiales_r9[] @relation("trazabilidad_materiales_r9_ubicacion_origen_idToubicacion")
 

@@ -85,16 +85,16 @@ INSERT INTO usuarios (nombre_usuario, nombre_completo, email, password_hash, pla
 -- =====================================================
 
 -- Inventario Rancagua
-INSERT INTO inventario_rancagua (title, nombre_material, unidad_medida, cod_nombre, fecha_inventario, pallets, stock, bodega, ubicacion, lote, condicion_armado, contado_por, material_id, ubicacion_id) VALUES
-('BOGR2062', 'BOLSA CE 2,5KG VF FLEX REGINA GENERICA', 'Unidad', 'BOGR2062 - BOLSA CE 2,5KG VF FLEX REGINA GENERICA', CURRENT_DATE, 2, 1000, 'Bodega Principal', 'Altillo Packing', 'LOTE001', 'Normal', 'Sistema', 1, 1),
-('CAJA500', 'CAJA CARTON 500GR CEREZAS', 'Unidad', 'CAJA500 - CAJA CARTON 500GR CEREZAS', CURRENT_DATE, 5, 2500, 'Bodega Exterior', 'Carpa 1', 'LOTE002', 'Normal', 'Sistema', 3, 2),
-('PALL001', 'PALLET MADERA EXPORTACION', 'Unidad', 'PALL001 - PALLET MADERA EXPORTACION', CURRENT_DATE, 0, 50, 'Área Externa', 'Patio Carga', 'LOTE003', 'Normal', 'Sistema', 4, 6);
-
--- Inventario Chimbarongo
-INSERT INTO inventario_chimbarongo (title, nombre_material, unidad_medida, cod_nombre, fecha_inventario, pallets, stock, bodega, ubicacion, lote, condicion_armado, contado_por, material_id, ubicacion_id) VALUES
-('ETIQ001', 'ETIQUETA TRAZABILIDAD LOTE', 'Unidad', 'ETIQ001 - ETIQUETA TRAZABILIDAD LOTE', CURRENT_DATE, 1, 5000, 'Bodega Principal', 'Centro Armado', 'LOTE004', 'Normal', 'Sistema', 2, 9),
-('FILM001', 'FILM PLASTICO PROTECTOR', 'Rollo', 'FILM001 - FILM PLASTICO PROTECTOR', CURRENT_DATE, 1, 20, 'Almacén General', 'Bodega A', 'LOTE005', 'Normal', 'Sistema', 5, 10),
-('KIT001', 'KIT EMBALAJE COMPLETO', 'Kit', 'KIT001 - KIT EMBALAJE COMPLETO', CURRENT_DATE, 3, 100, 'Zona Proceso', 'Área Clasificación', 'LOTE006', 'Armado', 'Sistema', 6, 12);
+-- Inventario Unificado
+INSERT INTO inventario (planta, title, nombre_material, unidad_medida, cod_nombre, fecha_inventario, pallets, stock, bodega, ubicacion, lote, condicion_armado, contado_por, material_id, ubicacion_id) VALUES
+-- Rancagua
+('Rancagua', 'BOGR2062', 'BOLSA CE 2,5KG VF FLEX REGINA GENERICA', 'Unidad', 'BOGR2062 - BOLSA CE 2,5KG VF FLEX REGINA GENERICA', CURRENT_DATE, 2, 1000, 'Bodega Principal', 'Altillo Packing', 'LOTE001', 'Normal', 'Sistema', 1, 1),
+('Rancagua', 'CAJA500', 'CAJA CARTON 500GR CEREZAS', 'Unidad', 'CAJA500 - CAJA CARTON 500GR CEREZAS', CURRENT_DATE, 5, 2500, 'Bodega Exterior', 'Carpa 1', 'LOTE002', 'Normal', 'Sistema', 3, 2),
+('Rancagua', 'PALL001', 'PALLET MADERA EXPORTACION', 'Unidad', 'PALL001 - PALLET MADERA EXPORTACION', CURRENT_DATE, 0, 50, 'Área Externa', 'Patio Carga', 'LOTE003', 'Normal', 'Sistema', 4, 6),
+-- Chimbarongo
+('Chimbarongo', 'ETIQ001', 'ETIQUETA TRAZABILIDAD LOTE', 'Unidad', 'ETIQ001 - ETIQUETA TRAZABILIDAD LOTE', CURRENT_DATE, 1, 5000, 'Bodega Principal', 'Centro Armado', 'LOTE004', 'Normal', 'Sistema', 2, 9),
+('Chimbarongo', 'FILM001', 'FILM PLASTICO PROTECTOR', 'Rollo', 'FILM001 - FILM PLASTICO PROTECTOR', CURRENT_DATE, 1, 20, 'Almacén General', 'Bodega A', 'LOTE005', 'Normal', 'Sistema', 5, 10),
+('Chimbarongo', 'KIT001', 'KIT EMBALAJE COMPLETO', 'Kit', 'KIT001 - KIT EMBALAJE COMPLETO', CURRENT_DATE, 3, 100, 'Zona Proceso', 'Área Clasificación', 'LOTE006', 'Armado', 'Sistema', 6, 12);
 
 -- =====================================================
 -- 8. CONFIGURACIÓN INICIAL DEL SISTEMA
@@ -103,36 +103,19 @@ INSERT INTO inventario_chimbarongo (title, nombre_material, unidad_medida, cod_n
 -- Crear vista para consultas frecuentes de inventario consolidado
 CREATE OR REPLACE VIEW vista_inventario_consolidado AS
 SELECT 
-    'Rancagua' as planta,
-    ir.title,
-    ir.nombre_material,
-    ir.unidad_medida,
-    ir.stock,
-    ir.pallets,
-    ir.bodega,
-    ir.ubicacion,
-    ir.fecha_inventario,
-    ir.lote,
-    ir.condicion_armado
-FROM inventario_rancagua ir
-WHERE ir.stock > 0
-
-UNION ALL
-
-SELECT 
-    'Chimbarongo' as planta,
-    ic.title,
-    ic.nombre_material,
-    ic.unidad_medida,
-    ic.stock,
-    ic.pallets,
-    ic.bodega,
-    ic.ubicacion,
-    ic.fecha_inventario,
-    ic.lote,
-    ic.condicion_armado
-FROM inventario_chimbarongo ic
-WHERE ic.stock > 0;
+    planta,
+    title,
+    nombre_material,
+    unidad_medida,
+    stock,
+    pallets,
+    bodega,
+    ubicacion,
+    fecha_inventario,
+    lote,
+    condicion_armado
+FROM inventario
+WHERE stock > 0;
 
 -- Crear vista para movimientos recientes
 CREATE OR REPLACE VIEW vista_movimientos_recientes AS
