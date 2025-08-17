@@ -123,33 +123,11 @@ CREATE TABLE trazabilidad_materiales_r9 (
 -- =====================================================
 
 -- 2.1 Tabla: inventario_rancagua
--- Descripción: Tabla para llevar registros de inventarios en planta Rancagua
-CREATE TABLE inventario_rancagua (
+-- 2.1 Tabla: inventario
+-- Descripción: Tabla para llevar registros de inventarios en ambas plantas
+CREATE TABLE inventario (
     id SERIAL PRIMARY KEY,
-    title VARCHAR(100) NOT NULL, -- código del material
-    nombre_material VARCHAR(300),
-    unidad_medida VARCHAR(50), -- Unidad, Litros, Rollo, etc.
-    cod_nombre VARCHAR(400),
-    fecha_inventario DATE NOT NULL,
-    pallets INTEGER DEFAULT 0,
-    stock DECIMAL(10,2) NOT NULL,
-    bodega VARCHAR(100),
-    ubicacion VARCHAR(100),
-    lote VARCHAR(100),
-    condicion_armado VARCHAR(50),
-    contado_por VARCHAR(100) NOT NULL,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
-    -- Claves foráneas
-    material_id INTEGER REFERENCES materiales(id),
-    ubicacion_id INTEGER REFERENCES ubicacion(id)
-);
-
--- 2.2 Tabla: inventario_chimbarongo
--- Descripción: Tabla para llevar registros de inventarios en planta Chimbarongo
-CREATE TABLE inventario_chimbarongo (
-    id SERIAL PRIMARY KEY,
+    planta VARCHAR(50) NOT NULL, -- Rancagua o Chimbarongo
     title VARCHAR(100) NOT NULL, -- código del material
     nombre_material VARCHAR(300),
     unidad_medida VARCHAR(50), -- Unidad, Litros, Rollo, etc.
@@ -239,10 +217,9 @@ CREATE INDEX idx_ubicacion_planta ON ubicacion(planta);
 CREATE INDEX idx_ubicacion_bodega ON ubicacion(bodega_deposito);
 
 -- Índices para inventarios
-CREATE INDEX idx_inventario_rancagua_fecha ON inventario_rancagua(fecha_inventario);
-CREATE INDEX idx_inventario_rancagua_material ON inventario_rancagua(title);
-CREATE INDEX idx_inventario_chimbarongo_fecha ON inventario_chimbarongo(fecha_inventario);
-CREATE INDEX idx_inventario_chimbarongo_material ON inventario_chimbarongo(title);
+CREATE INDEX idx_inventario_fecha ON inventario(fecha_inventario);
+CREATE INDEX idx_inventario_material ON inventario(title);
+CREATE INDEX idx_inventario_planta ON inventario(planta);
 
 -- Índices para usuarios y sesiones
 CREATE INDEX idx_usuarios_nombre_usuario ON usuarios(nombre_usuario);
@@ -287,12 +264,8 @@ CREATE TRIGGER trigger_actualizar_trazabilidad
     BEFORE UPDATE ON trazabilidad_materiales_r9
     FOR EACH ROW EXECUTE FUNCTION actualizar_fecha_modificacion();
 
-CREATE TRIGGER trigger_actualizar_inventario_rancagua
-    BEFORE UPDATE ON inventario_rancagua
-    FOR EACH ROW EXECUTE FUNCTION actualizar_fecha_modificacion();
-
-CREATE TRIGGER trigger_actualizar_inventario_chimbarongo
-    BEFORE UPDATE ON inventario_chimbarongo
+CREATE TRIGGER trigger_actualizar_inventario
+    BEFORE UPDATE ON inventario
     FOR EACH ROW EXECUTE FUNCTION actualizar_fecha_modificacion();
 
 CREATE TRIGGER trigger_actualizar_usuarios
@@ -309,8 +282,7 @@ COMMENT ON TABLE proveedores IS 'Catálogo de proveedores';
 COMMENT ON TABLE temporadas_app IS 'Configuración de temporadas de trabajo';
 COMMENT ON TABLE tipo_movimientos_app IS 'Tipos de movimientos permitidos';
 COMMENT ON TABLE trazabilidad_materiales_r9 IS 'Registro principal de movimientos de materiales';
-COMMENT ON TABLE inventario_rancagua IS 'Inventarios de planta Rancagua';
-COMMENT ON TABLE inventario_chimbarongo IS 'Inventarios de planta Chimbarongo';
+COMMENT ON TABLE inventario IS 'Registros de inventarios de ambas plantas';
 COMMENT ON TABLE usuarios IS 'Usuarios del sistema';
 COMMENT ON TABLE sesiones_usuario IS 'Control de sesiones activas';
 COMMENT ON TABLE logs_sistema IS 'Registro de actividades del sistema';
