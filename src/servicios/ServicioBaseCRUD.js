@@ -1,7 +1,5 @@
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('../configuracion/prismaClient');
 const ManejadorRespuestas = require('../utilidades/ManejadorRespuestas');
-
-const prisma = new PrismaClient();
 
 /**
  * Servicio base para operaciones CRUD comunes

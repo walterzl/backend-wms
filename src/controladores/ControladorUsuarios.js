@@ -1,11 +1,9 @@
 const bcrypt = require("bcrypt");
-const { PrismaClient } = require("@prisma/client");
+const prisma = require("../configuracion/prismaClient");
 const CONSTANTES = require("../configuracion/constantes");
 const ManejadorRespuestas = require("../utilidades/ManejadorRespuestas");
 const ServicioValidacion = require("../servicios/ServicioValidacion");
 const configuracion = require("../configuracion/config");
-
-const prisma = new PrismaClient();
 
 /**
  * Controlador de Usuarios
