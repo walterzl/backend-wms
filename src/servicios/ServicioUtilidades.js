@@ -140,54 +140,6 @@ class ServicioUtilidades {
   }
 
   /**
-   * Valida si un RUT chileno es válido
-   * @param {string} rut - RUT a validar (formato: 12345678-9)
-   * @returns {boolean} True si es válido
-   */
-  static validarRut(rut) {
-    if (!rut || typeof rut !== 'string') return false;
-    
-    const rutLimpio = rut.replace(/[.-]/g, '');
-    if (rutLimpio.length < 8 || rutLimpio.length > 9) return false;
-    
-    const cuerpo = rutLimpio.slice(0, -1);
-    const dv = rutLimpio.slice(-1).toLowerCase();
-    
-    if (!/^\d+$/.test(cuerpo)) return false;
-    
-    let suma = 0;
-    let multiplicador = 2;
-    
-    for (let i = cuerpo.length - 1; i >= 0; i--) {
-      suma += parseInt(cuerpo[i]) * multiplicador;
-      multiplicador = multiplicador === 7 ? 2 : multiplicador + 1;
-    }
-    
-    const dvCalculado = 11 - (suma % 11);
-    const dvFinal = dvCalculado === 11 ? '0' : dvCalculado === 10 ? 'k' : dvCalculado.toString();
-    
-    return dv === dvFinal;
-  }
-
-  /**
-   * Formatea un RUT chileno
-   * @param {string} rut - RUT sin formato
-   * @returns {string} RUT formateado (12.345.678-9)
-   */
-  static formatearRut(rut) {
-    if (!rut) return '';
-    
-    const rutLimpio = rut.replace(/[.-]/g, '');
-    if (rutLimpio.length < 8) return rut;
-    
-    const cuerpo = rutLimpio.slice(0, -1);
-    const dv = rutLimpio.slice(-1);
-    
-    const cuerpoFormateado = cuerpo.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    return `${cuerpoFormateado}-${dv}`;
-  }
-
-  /**
    * Capitaliza la primera letra de cada palabra
    * @param {string} texto - Texto a capitalizar
    * @returns {string} Texto capitalizado

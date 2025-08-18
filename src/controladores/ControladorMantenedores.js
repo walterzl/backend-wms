@@ -403,11 +403,10 @@ class ControladorMantenedores {
         },
         select: {
           id: true,
-          codigo: true,
-          nombre: true,
+          title: true,
           fecha_inicio: true,
-          fecha_termino: true,
-          activa: true
+          fecha_fin: true,
+          activo: true
         },
         orderBy: {
           fecha_inicio: 'desc'
@@ -439,15 +438,14 @@ class ControladorMantenedores {
     try {
       const temporadaActiva = await prisma.temporadas_app.findFirst({
         where: {
-          activa: true
+          activo: true
         },
         select: {
           id: true,
-          codigo: true,
-          nombre: true,
+          title: true,
           fecha_inicio: true,
-          fecha_termino: true,
-          activa: true
+          fecha_fin: true,
+          activo: true
         }
       });
 
@@ -460,11 +458,11 @@ class ControladorMantenedores {
 
       const temporadaFormateada = {
         id: temporadaActiva.id,
-        codigo: temporadaActiva.codigo,
-        nombre: temporadaActiva.nombre,
+        codigo: temporadaActiva.title,
+        nombre: temporadaActiva.title,
         fecha_inicio: temporadaActiva.fecha_inicio,
-        fecha_termino: temporadaActiva.fecha_termino,
-        activa: temporadaActiva.activa
+        fecha_termino: temporadaActiva.fecha_fin,
+        activa: temporadaActiva.activo
       };
 
       return ManejadorRespuestas.exito(
@@ -498,20 +496,19 @@ class ControladorMantenedores {
         },
         select: {
           id: true,
-          codigo: true,
-          nombre: true,
+          title: true,
           descripcion: true,
           activo: true
         },
         orderBy: {
-          nombre: 'asc'
+          title: 'asc'
         }
       });
 
       const tiposMovimientoFormateados = tiposMovimiento.map(tipo => ({
         id: tipo.id,
-        codigo: tipo.codigo,
-        nombre: tipo.nombre,
+        codigo: tipo.title,
+        nombre: tipo.title,
         descripcion: tipo.descripcion,
         activo: tipo.activo
       }));

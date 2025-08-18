@@ -79,8 +79,7 @@ const ENDPOINTS = {
     CONSOLIDADO: '/api/inventario/consolidado',
     
     // Por planta
-    RANCAGUA: '/api/inventario/rancagua',
-    CHIMBARONGO: '/api/inventario/chimbarongo',
+    POR_PLANTA: '/api/inventario/planta/:planta',
     
     // Operaciones
     AJUSTAR: '/api/inventario/ajustar',
