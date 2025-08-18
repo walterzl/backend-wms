@@ -10,7 +10,12 @@
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "admin:reset-passwords": "node scripts/actualizar-passwords.js",
+    "admin:create-user": "node scripts/crear-usuario-admin.js",
+    "admin:list-users": "node scripts/crear-usuario-admin.js --list",
+    "admin:verify-password": "node scripts/actualizar-passwords.js --verify",
+    "admin:help": "node scripts/actualizar-passwords.js --help && node scripts/crear-usuario-admin.js --help"
   },
   "keywords": [
     "wms",
@@ -23,6 +28,7 @@
   "license": "MIT",
   "dependencies": {
     "@prisma/client": "^5.7.1",
+    "axios": "^1.11.0",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",

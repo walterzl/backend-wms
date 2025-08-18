@@ -61,6 +61,10 @@ model materiales {
   fecha_creacion             DateTime?                    @default(now()) @db.Timestamp(6)
   fecha_actualizacion        DateTime?                    @default(now()) @db.Timestamp(6)
   inventario                 inventario[]
+  operaciones_frio_despacho  operaciones_frio_despacho[]
+  recepciones_lotes          recepciones_lotes[]
+  stock_ubicaciones          stock_ubicaciones[]
+  tarjas                     tarjas[]
   trazabilidad_materiales_r9 trazabilidad_materiales_r9[]
 
   @@index([clasificacion], map: "idx_materiales_clasificacion")
@@ -77,6 +81,8 @@ model proveedores {
   activo                     Boolean?                     @default(true)
   fecha_creacion             DateTime?                    @default(now()) @db.Timestamp(6)
   fecha_actualizacion        DateTime?                    @default(now()) @db.Timestamp(6)
+  recepciones_lotes          recepciones_lotes[]
+  tarjas                     tarjas[]
   trazabilidad_materiales_r9 trazabilidad_materiales_r9[]
 }
 
@@ -182,6 +188,10 @@ model ubicacion {
   fecha_creacion                                                                        DateTime?                    @default(now()) @db.Timestamp(6)
   fecha_actualizacion                                                                   DateTime?                    @default(now()) @db.Timestamp(6)
   inventario                                                                            inventario[]
+  operaciones_frio_despacho_operaciones_frio_despacho_ubicacion_destino_idToubicacion   operaciones_frio_despacho[]  @relation("operaciones_frio_despacho_ubicacion_destino_idToubicacion")
+  operaciones_frio_despacho_operaciones_frio_despacho_ubicacion_origen_idToubicacion    operaciones_frio_despacho[]  @relation("operaciones_frio_despacho_ubicacion_origen_idToubicacion")
+  recepciones_lotes                                                                     recepciones_lotes[]
+  stock_ubicaciones                                                                     stock_ubicaciones[]
   trazabilidad_materiales_r9_trazabilidad_materiales_r9_ubicacion_destino_idToubicacion trazabilidad_materiales_r9[] @relation("trazabilidad_materiales_r9_ubicacion_destino_idToubicacion")
   trazabilidad_materiales_r9_trazabilidad_materiales_r9_ubicacion_origen_idToubicacion  trazabilidad_materiales_r9[] @relation("trazabilidad_materiales_r9_ubicacion_origen_idToubicacion")
 
@@ -191,19 +201,159 @@ model ubicacion {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model usuarios {
-  id                  Int                @id @default(autoincrement())
-  nombre_usuario      String             @unique @db.VarChar(50)
-  nombre_completo     String             @db.VarChar(200)
-  email               String             @unique @db.VarChar(200)
-  password_hash       String             @db.VarChar(255)
-  planta_asignada     String?            @db.VarChar(50)
-  rol                 String?            @default("operador") @db.VarChar(50)
-  activo              Boolean?           @default(true)
-  ultimo_acceso       DateTime?          @db.Timestamp(6)
-  fecha_creacion      DateTime?          @default(now()) @db.Timestamp(6)
-  fecha_actualizacion DateTime?          @default(now()) @db.Timestamp(6)
-  logs_sistema        logs_sistema[]
-  sesiones_usuario    sesiones_usuario[]
+  id                        Int                         @id @default(autoincrement())
+  nombre_usuario            String                      @unique @db.VarChar(50)
+  nombre_completo           String                      @db.VarChar(200)
+  email                     String                      @unique @db.VarChar(200)
+  password_hash             String                      @db.VarChar(255)
+  planta_asignada           String?                     @db.VarChar(50)
+  rol                       String?                     @default("operador") @db.VarChar(50)
+  activo                    Boolean?                    @default(true)
+  ultimo_acceso             DateTime?                   @db.Timestamp(6)
+  fecha_creacion            DateTime?                   @default(now()) @db.Timestamp(6)
+  fecha_actualizacion       DateTime?                   @default(now()) @db.Timestamp(6)
+  logs_sistema              logs_sistema[]
+  operaciones_frio_despacho operaciones_frio_despacho[]
+  recepciones_lotes         recepciones_lotes[]
+  sesiones_usuario          sesiones_usuario[]
+  tarjas                    tarjas[]
 
   @@index([nombre_usuario], map: "idx_usuarios_nombre_usuario")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model operaciones_frio_despacho {
+  id                                                                  Int         @id @default(autoincrement())
+  numero_operacion                                                    String      @unique @db.VarChar(50)
+  planta                                                              String      @db.VarChar(50)
+  fecha_operacion                                                     DateTime    @db.Date
+  tipo_operacion                                                      String      @db.VarChar(50)
+  turno                                                               String?     @db.VarChar(20)
+  numero_embarque                                                     String?     @db.VarChar(50)
+  patente_camion                                                      String?     @db.VarChar(20)
+  material_id                                                         Int?
+  codigo_material                                                     String      @db.VarChar(50)
+  nombre_material                                                     String      @db.VarChar(300)
+  cod_nombre                                                          String?     @db.VarChar(400)
+  unidad_medida                                                       String?     @db.VarChar(50)
+  clasificacion                                                       String?     @db.VarChar(50)
+  lote                                                                String?     @db.VarChar(100)
+  cantidad                                                            Decimal     @db.Decimal(10, 2)
+  ubicacion_origen_id                                                 Int?
+  bodega_origen                                                       String?     @db.VarChar(100)
+  ubicacion_origen                                                    String?     @db.VarChar(100)
+  ubicacion_destino_id                                                Int?
+  bodega_destino                                                      String?     @db.VarChar(100)
+  ubicacion_destino                                                   String?     @db.VarChar(100)
+  estado                                                              String?     @default("pendiente") @db.VarChar(20)
+  observaciones                                                       String?
+  usuario_id                                                          Int?
+  fecha_creacion                                                      DateTime?   @default(now()) @db.Timestamp(6)
+  fecha_procesamiento                                                 DateTime?   @db.Timestamp(6)
+  materiales                                                          materiales? @relation(fields: [material_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  ubicacion_operaciones_frio_despacho_ubicacion_destino_idToubicacion ubicacion?  @relation("operaciones_frio_despacho_ubicacion_destino_idToubicacion", fields: [ubicacion_destino_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  ubicacion_operaciones_frio_despacho_ubicacion_origen_idToubicacion  ubicacion?  @relation("operaciones_frio_despacho_ubicacion_origen_idToubicacion", fields: [ubicacion_origen_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  usuarios                                                            usuarios?   @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([numero_embarque], map: "idx_frio_embarque")
+  @@index([fecha_operacion], map: "idx_frio_fecha")
+  @@index([codigo_material], map: "idx_frio_material")
+  @@index([planta], map: "idx_frio_planta")
+  @@index([tipo_operacion], map: "idx_frio_tipo")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model recepciones_lotes {
+  id                   Int          @id @default(autoincrement())
+  numero_recepcion     String       @unique @db.VarChar(50)
+  planta               String       @db.VarChar(50)
+  fecha_recepcion      DateTime     @db.Date
+  proveedor_id         Int?
+  nombre_proveedor     String?      @db.VarChar(200)
+  guia_sii             String?      @db.VarChar(50)
+  material_id          Int?
+  codigo_material      String       @db.VarChar(50)
+  nombre_material      String       @db.VarChar(300)
+  cod_nombre           String?      @db.VarChar(400)
+  unidad_medida        String?      @db.VarChar(50)
+  clasificacion        String?      @db.VarChar(50)
+  lote                 String?      @db.VarChar(100)
+  cantidad             Decimal      @db.Decimal(10, 2)
+  pallets              Int?         @default(0)
+  codigo_qr            String?
+  ubicacion_destino_id Int?
+  bodega_destino       String?      @db.VarChar(100)
+  ubicacion_destino    String?      @db.VarChar(100)
+  estado               String?      @default("pendiente") @db.VarChar(20)
+  observaciones        String?
+  usuario_id           Int?
+  fecha_creacion       DateTime?    @default(now()) @db.Timestamp(6)
+  fecha_procesamiento  DateTime?    @db.Timestamp(6)
+  materiales           materiales?  @relation(fields: [material_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  proveedores          proveedores? @relation(fields: [proveedor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  ubicacion            ubicacion?   @relation(fields: [ubicacion_destino_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  usuarios             usuarios?    @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([estado], map: "idx_recepciones_estado")
+  @@index([fecha_recepcion], map: "idx_recepciones_fecha")
+  @@index([codigo_material], map: "idx_recepciones_material")
+  @@index([planta], map: "idx_recepciones_planta")
+  @@index([nombre_proveedor], map: "idx_recepciones_proveedor")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model stock_ubicaciones {
+  id                      Int         @id @default(autoincrement())
+  material_id             Int?
+  codigo_material         String      @db.VarChar(50)
+  nombre_material         String      @db.VarChar(300)
+  ubicacion_id            Int?
+  planta                  String      @db.VarChar(50)
+  bodega                  String      @db.VarChar(100)
+  ubicacion_nombre        String      @db.VarChar(100)
+  lote                    String?     @db.VarChar(100)
+  cantidad_actual         Decimal     @default(0) @db.Decimal(10, 2)
+  cantidad_reservada      Decimal?    @default(0) @db.Decimal(10, 2)
+  fecha_ultimo_movimiento DateTime?   @db.Timestamp(6)
+  fecha_actualizacion     DateTime?   @default(now()) @db.Timestamp(6)
+  materiales              materiales? @relation(fields: [material_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  ubicacion               ubicacion?  @relation(fields: [ubicacion_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([material_id, ubicacion_id, lote])
+  @@index([cantidad_actual], map: "idx_stock_cantidad")
+  @@index([material_id, ubicacion_id], map: "idx_stock_material_ubicacion")
+  @@index([planta], map: "idx_stock_planta")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model tarjas {
+  id               Int          @id @default(autoincrement())
+  numero_tarja     String       @unique @db.VarChar(50)
+  planta           String       @db.VarChar(50)
+  fecha_generacion DateTime     @db.Date
+  tipo_tarja       String       @db.VarChar(20)
+  descripcion      String
+  material_id      Int?
+  codigo_material  String       @db.VarChar(50)
+  nombre_material  String       @db.VarChar(300)
+  lote             String?      @db.VarChar(100)
+  cantidad         Decimal      @db.Decimal(10, 2)
+  numero_item      Int?
+  fecha_item       DateTime?    @db.Date
+  proveedor_id     Int?
+  nombre_proveedor String?      @db.VarChar(200)
+  guia             String?      @db.VarChar(50)
+  estado           String?      @default("generada") @db.VarChar(20)
+  usuario_id       Int?
+  fecha_creacion   DateTime?    @default(now()) @db.Timestamp(6)
+  fecha_impresion  DateTime?    @db.Timestamp(6)
+  materiales       materiales?  @relation(fields: [material_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  proveedores      proveedores? @relation(fields: [proveedor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  usuarios         usuarios?    @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([estado], map: "idx_tarjas_estado")
+  @@index([fecha_generacion], map: "idx_tarjas_fecha")
+  @@index([codigo_material], map: "idx_tarjas_material")
+  @@index([planta], map: "idx_tarjas_planta")
+  @@index([tipo_tarja], map: "idx_tarjas_tipo")
 }

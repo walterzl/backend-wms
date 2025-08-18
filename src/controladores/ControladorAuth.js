@@ -1,9 +1,9 @@
-const bcrypt = require('bcrypt');
-const { PrismaClient } = require('@prisma/client');
-const middlewareAuth = require('../middleware/middlewareAuth');
-const ServicioValidacion = require('../servicios/ServicioValidacion');
-const configuracion = require('../configuracion/config');
-const CONSTANTES = require('../configuracion/constantes');
+const bcrypt = require("bcrypt");
+const { PrismaClient } = require("@prisma/client");
+const middlewareAuth = require("../middleware/middlewareAuth");
+const ServicioValidacion = require("../servicios/ServicioValidacion");
+const configuracion = require("../configuracion/config");
+const CONSTANTES = require("../configuracion/constantes");
 
 const prisma = new PrismaClient();
 
@@ -12,7 +12,6 @@ const prisma = new PrismaClient();
  * Maneja el login, logout y validación de usuarios
  */
 class ControladorAuth {
-
   /**
    * Iniciar sesión de usuario
    * @param {Request} req - Request de Express
@@ -25,8 +24,8 @@ class ControladorAuth {
       if (!validacion.esValido) {
         return res.status(CONSTANTES.CODIGOS_RESPUESTA.BAD_REQUEST).json({
           exito: false,
-          mensaje: 'Datos de login inválidos',
-          errores: validacion.errores
+          mensaje: "Datos de login inválidos",
+          errores: validacion.errores,
         });
       }
 
@@ -35,18 +34,15 @@ class ControladorAuth {
       // Buscar usuario en la base de datos
       const usuarioDb = await prisma.usuarios.findFirst({
         where: {
-          OR: [
-            { usuario: usuario },
-            { email: usuario }
-          ]
-        }
+          OR: [{ nombre_usuario: usuario }, { email: usuario }],
+        },
       });
 
       if (!usuarioDb) {
         return res.status(CONSTANTES.CODIGOS_RESPUESTA.NO_AUTORIZADO).json({
           exito: false,
-          mensaje: 'Credenciales inválidas',
-          codigo: 'CREDENCIALES_INVALIDAS'
+          mensaje: "Credenciales inválidas",
+          codigo: "CREDENCIALES_INVALIDAS",
         });
       }
 
@@ -54,18 +50,21 @@ class ControladorAuth {
       if (!usuarioDb.activo) {
         return res.status(CONSTANTES.CODIGOS_RESPUESTA.NO_AUTORIZADO).json({
           exito: false,
-          mensaje: 'Usuario desactivado. Contacte al administrador.',
-          codigo: 'USUARIO_DESACTIVADO'
+          mensaje: "Usuario desactivado. Contacte al administrador.",
+          codigo: "USUARIO_DESACTIVADO",
         });
       }
 
       // Verificar contraseña
-      const passwordValida = await bcrypt.compare(password, usuarioDb.password_hash);
+      const passwordValida = await bcrypt.compare(
+        password,
+        usuarioDb.password_hash
+      );
       if (!passwordValida) {
         return res.status(CONSTANTES.CODIGOS_RESPUESTA.NO_AUTORIZADO).json({
           exito: false,
-          mensaje: 'Credenciales inválidas',
-          codigo: 'CREDENCIALES_INVALIDAS'
+          mensaje: "Credenciales inválidas",
+          codigo: "CREDENCIALES_INVALIDAS",
         });
       }
 
@@ -77,65 +76,66 @@ class ControladorAuth {
 
       // Crear nueva sesión
       const fechaExpiracion = new Date();
-      fechaExpiracion.setHours(fechaExpiracion.getHours() + CONSTANTES.SESION.DURACION_HORAS);
+      fechaExpiracion.setHours(
+        fechaExpiracion.getHours() + CONSTANTES.SESION.DURACION_HORAS
+      );
 
-      const nuevaSesion = await prisma.sesionesUsuario.create({
+      const nuevaSesion = await prisma.sesiones_usuario.create({
         data: {
           usuario_id: usuarioDb.id,
+          planta_seleccionada: usuarioDb.planta_asignada || "RANCAGUA",
           token_jwt: token,
           fecha_expiracion: fechaExpiracion,
-          ip_cliente: req.ip || req.connection.remoteAddress,
-          user_agent: req.headers['user-agent'] || 'Unknown',
-          activa: true
-        }
+          ip_address: req.ip || req.connection.remoteAddress,
+          user_agent: req.headers["user-agent"] || "Unknown",
+          activa: true,
+        },
       });
 
       // Actualizar último acceso
       await prisma.usuarios.update({
         where: { id: usuarioDb.id },
-        data: { ultimo_acceso: new Date() }
+        data: { ultimo_acceso: new Date() },
       });
 
       // Registrar log de inicio de sesión
-      await prisma.logsSistema.create({
+      await prisma.logs_sistema.create({
         data: {
           usuario_id: usuarioDb.id,
-          nivel: CONSTANTES.NIVELES_LOG.INFO,
-          mensaje: 'Inicio de sesión exitoso',
-          modulo: 'auth',
-          accion: 'login',
-          ip_cliente: req.ip || req.connection.remoteAddress
-        }
+          accion: "login",
+          modulo: "auth",
+          descripcion: "Inicio de sesión exitoso",
+          ip_address: req.ip || req.connection.remoteAddress,
+        },
       });
 
       // Preparar respuesta (sin información sensible)
       const datosUsuario = {
         id: usuarioDb.id,
-        usuario: usuarioDb.usuario,
+        usuario: usuarioDb.nombre_usuario,
         email: usuarioDb.email,
         nombreCompleto: usuarioDb.nombre_completo,
         rol: usuarioDb.rol,
         plantaAsignada: usuarioDb.planta_asignada,
-        ultimoAcceso: usuarioDb.ultimo_acceso
+        ultimoAcceso: usuarioDb.ultimo_acceso,
       };
 
       res.json({
         exito: true,
-        mensaje: 'Inicio de sesión exitoso',
+        mensaje: "Inicio de sesión exitoso",
         datos: {
           usuario: datosUsuario,
           token: token,
           expiracion: fechaExpiracion,
-          sesionId: nuevaSesion.id
-        }
+          sesionId: nuevaSesion.id,
+        },
       });
-
     } catch (error) {
-      console.error('Error en login:', error);
+      console.error("Error en login:", error);
       res.status(CONSTANTES.CODIGOS_RESPUESTA.ERROR_INTERNO).json({
         exito: false,
-        mensaje: 'Error interno del servidor',
-        codigo: 'ERROR_INTERNO_LOGIN'
+        mensaje: "Error interno del servidor",
+        codigo: "ERROR_INTERNO_LOGIN",
       });
     }
   }
@@ -152,47 +152,45 @@ class ControladorAuth {
       if (!token) {
         return res.status(CONSTANTES.CODIGOS_RESPUESTA.BAD_REQUEST).json({
           exito: false,
-          mensaje: 'Token requerido para cerrar sesión',
-          codigo: 'TOKEN_REQUERIDO'
+          mensaje: "Token requerido para cerrar sesión",
+          codigo: "TOKEN_REQUERIDO",
         });
       }
 
       // Desactivar la sesión actual
-      await prisma.sesionesUsuario.updateMany({
+      await prisma.sesiones_usuario.updateMany({
         where: {
           token_jwt: token,
-          activa: true
+          activa: true,
         },
         data: {
-          activa: false
-        }
+          activa: false,
+        },
       });
 
       // Registrar log de cierre de sesión
       if (req.usuario) {
-        await prisma.logsSistema.create({
+        await prisma.logs_sistema.create({
           data: {
             usuario_id: req.usuario.id,
-            nivel: CONSTANTES.NIVELES_LOG.INFO,
-            mensaje: 'Cierre de sesión',
-            modulo: 'auth',
-            accion: 'logout',
-            ip_cliente: req.ip || req.connection.remoteAddress
-          }
+            accion: "logout",
+            modulo: "auth",
+            descripcion: "Cierre de sesión",
+            ip_address: req.ip || req.connection.remoteAddress,
+          },
         });
       }
 
       res.json({
         exito: true,
-        mensaje: 'Sesión cerrada exitosamente'
+        mensaje: "Sesión cerrada exitosamente",
       });
-
     } catch (error) {
-      console.error('Error en logout:', error);
+      console.error("Error en logout:", error);
       res.status(CONSTANTES.CODIGOS_RESPUESTA.ERROR_INTERNO).json({
         exito: false,
-        mensaje: 'Error al cerrar sesión',
-        codigo: 'ERROR_INTERNO_LOGOUT'
+        mensaje: "Error al cerrar sesión",
+        codigo: "ERROR_INTERNO_LOGOUT",
       });
     }
   }
@@ -209,68 +207,69 @@ class ControladorAuth {
       if (!tokenActual) {
         return res.status(CONSTANTES.CODIGOS_RESPUESTA.NO_AUTORIZADO).json({
           exito: false,
-          mensaje: 'Token requerido para renovar',
-          codigo: 'TOKEN_REQUERIDO'
+          mensaje: "Token requerido para renovar",
+          codigo: "TOKEN_REQUERIDO",
         });
       }
 
       // Buscar sesión activa
-      const sesion = await prisma.sesionesUsuario.findFirst({
+      const sesion = await prisma.sesiones_usuario.findFirst({
         where: {
           token_jwt: tokenActual,
-          activa: true
+          activa: true,
         },
         include: {
-          usuario: true
-        }
+          usuarios: true,
+        },
       });
 
       if (!sesion) {
         return res.status(CONSTANTES.CODIGOS_RESPUESTA.NO_AUTORIZADO).json({
           exito: false,
-          mensaje: 'Sesión inválida',
-          codigo: 'SESION_INVALIDA'
+          mensaje: "Sesión inválida",
+          codigo: "SESION_INVALIDA",
         });
       }
 
       // Verificar que el usuario esté activo
-      if (!sesion.usuario.activo) {
+      if (!sesion.usuarios.activo) {
         return res.status(CONSTANTES.CODIGOS_RESPUESTA.NO_AUTORIZADO).json({
           exito: false,
-          mensaje: 'Usuario desactivado',
-          codigo: 'USUARIO_DESACTIVADO'
+          mensaje: "Usuario desactivado",
+          codigo: "USUARIO_DESACTIVADO",
         });
       }
 
       // Generar nuevo token
-      const nuevoToken = middlewareAuth.generarToken(sesion.usuario);
+      const nuevoToken = middlewareAuth.generarToken(sesion.usuarios);
       const nuevaExpiracion = new Date();
-      nuevaExpiracion.setHours(nuevaExpiracion.getHours() + CONSTANTES.SESION.DURACION_HORAS);
+      nuevaExpiracion.setHours(
+        nuevaExpiracion.getHours() + CONSTANTES.SESION.DURACION_HORAS
+      );
 
       // Actualizar sesión
-      await prisma.sesionesUsuario.update({
+      await prisma.sesiones_usuario.update({
         where: { id: sesion.id },
         data: {
           token_jwt: nuevoToken,
-          fecha_expiracion: nuevaExpiracion
-        }
+          fecha_expiracion: nuevaExpiracion,
+        },
       });
 
       res.json({
         exito: true,
-        mensaje: 'Token renovado exitosamente',
+        mensaje: "Token renovado exitosamente",
         datos: {
           token: nuevoToken,
-          expiracion: nuevaExpiracion
-        }
+          expiracion: nuevaExpiracion,
+        },
       });
-
     } catch (error) {
-      console.error('Error en refresh:', error);
+      console.error("Error en refresh:", error);
       res.status(CONSTANTES.CODIGOS_RESPUESTA.ERROR_INTERNO).json({
         exito: false,
-        mensaje: 'Error al renovar token',
-        codigo: 'ERROR_INTERNO_REFRESH'
+        mensaje: "Error al renovar token",
+        codigo: "ERROR_INTERNO_REFRESH",
       });
     }
   }
@@ -285,25 +284,24 @@ class ControladorAuth {
       if (!req.usuario) {
         return res.status(CONSTANTES.CODIGOS_RESPUESTA.NO_AUTORIZADO).json({
           exito: false,
-          mensaje: 'Token inválido',
-          codigo: 'TOKEN_INVALIDO'
+          mensaje: "Token inválido",
+          codigo: "TOKEN_INVALIDO",
         });
       }
 
       res.json({
         exito: true,
-        mensaje: 'Token válido',
+        mensaje: "Token válido",
         datos: {
-          usuario: req.usuario
-        }
+          usuario: req.usuario,
+        },
       });
-
     } catch (error) {
-      console.error('Error en validate:', error);
+      console.error("Error en validate:", error);
       res.status(CONSTANTES.CODIGOS_RESPUESTA.ERROR_INTERNO).json({
         exito: false,
-        mensaje: 'Error al validar token',
-        codigo: 'ERROR_INTERNO_VALIDATE'
+        mensaje: "Error al validar token",
+        codigo: "ERROR_INTERNO_VALIDATE",
       });
     }
   }
@@ -320,36 +318,41 @@ class ControladorAuth {
       if (!passwordActual || !passwordNueva) {
         return res.status(CONSTANTES.CODIGOS_RESPUESTA.BAD_REQUEST).json({
           exito: false,
-          mensaje: 'Contraseña actual y nueva son requeridas'
+          mensaje: "Contraseña actual y nueva son requeridas",
         });
       }
 
       // Validar nueva contraseña
       const validacion = ServicioValidacion.validar(
         { password: passwordNueva },
-        { password: ServicioValidacion.esquemaUsuario.crear.extract('password') }
+        {
+          password: ServicioValidacion.esquemaUsuario.crear.extract("password"),
+        }
       );
 
       if (!validacion.esValido) {
         return res.status(CONSTANTES.CODIGOS_RESPUESTA.BAD_REQUEST).json({
           exito: false,
-          mensaje: 'Nueva contraseña no cumple con los requisitos',
-          errores: validacion.errores
+          mensaje: "Nueva contraseña no cumple con los requisitos",
+          errores: validacion.errores,
         });
       }
 
       // Obtener usuario actual
       const usuario = await prisma.usuarios.findUnique({
-        where: { id: req.usuario.id }
+        where: { id: req.usuario.id },
       });
 
       // Verificar contraseña actual
-      const passwordValida = await bcrypt.compare(passwordActual, usuario.password_hash);
+      const passwordValida = await bcrypt.compare(
+        passwordActual,
+        usuario.password_hash
+      );
       if (!passwordValida) {
         return res.status(CONSTANTES.CODIGOS_RESPUESTA.BAD_REQUEST).json({
           exito: false,
-          mensaje: 'Contraseña actual incorrecta',
-          codigo: 'PASSWORD_ACTUAL_INCORRECTA'
+          mensaje: "Contraseña actual incorrecta",
+          codigo: "PASSWORD_ACTUAL_INCORRECTA",
         });
       }
 
@@ -360,32 +363,30 @@ class ControladorAuth {
       // Actualizar contraseña
       await prisma.usuarios.update({
         where: { id: req.usuario.id },
-        data: { password_hash: passwordHash }
+        data: { password_hash: passwordHash },
       });
 
       // Registrar log
-      await prisma.logsSistema.create({
+      await prisma.logs_sistema.create({
         data: {
           usuario_id: req.usuario.id,
-          nivel: CONSTANTES.NIVELES_LOG.INFO,
-          mensaje: 'Contraseña cambiada',
-          modulo: 'auth',
-          accion: 'cambiar_password',
-          ip_cliente: req.ip || req.connection.remoteAddress
-        }
+          accion: "cambiar_password",
+          modulo: "auth",
+          descripcion: "Contraseña cambiada",
+          ip_address: req.ip || req.connection.remoteAddress,
+        },
       });
 
       res.json({
         exito: true,
-        mensaje: 'Contraseña cambiada exitosamente'
+        mensaje: "Contraseña cambiada exitosamente",
       });
-
     } catch (error) {
-      console.error('Error al cambiar contraseña:', error);
+      console.error("Error al cambiar contraseña:", error);
       res.status(CONSTANTES.CODIGOS_RESPUESTA.ERROR_INTERNO).json({
         exito: false,
-        mensaje: 'Error al cambiar contraseña',
-        codigo: 'ERROR_INTERNO_CAMBIAR_PASSWORD'
+        mensaje: "Error al cambiar contraseña",
+        codigo: "ERROR_INTERNO_CAMBIAR_PASSWORD",
       });
     }
   }
@@ -396,35 +397,40 @@ class ControladorAuth {
    */
   static async cerrarSesionesExcedentes(usuarioId) {
     try {
-      const sesionesActivas = await prisma.sesionesUsuario.findMany({
+      const sesionesActivas = await prisma.sesiones_usuario.findMany({
         where: {
           usuario_id: usuarioId,
           activa: true,
           fecha_expiracion: {
-            gte: new Date()
-          }
+            gte: new Date(),
+          },
         },
         orderBy: {
-          fecha_inicio: 'asc'
-        }
+          fecha_inicio: "asc",
+        },
       });
 
-      if (sesionesActivas.length >= CONSTANTES.SESION.MAX_SESIONES_SIMULTANEAS) {
-        const sesionesACerrar = sesionesActivas.slice(0, -CONSTANTES.SESION.MAX_SESIONES_SIMULTANEAS + 1);
-        
-        await prisma.sesionesUsuario.updateMany({
+      if (
+        sesionesActivas.length >= CONSTANTES.SESION.MAX_SESIONES_SIMULTANEAS
+      ) {
+        const sesionesACerrar = sesionesActivas.slice(
+          0,
+          -CONSTANTES.SESION.MAX_SESIONES_SIMULTANEAS + 1
+        );
+
+        await prisma.sesiones_usuario.updateMany({
           where: {
             id: {
-              in: sesionesACerrar.map(s => s.id)
-            }
+              in: sesionesACerrar.map((s) => s.id),
+            },
           },
           data: {
-            activa: false
-          }
+            activa: false,
+          },
         });
       }
     } catch (error) {
-      console.error('Error al cerrar sesiones excedentes:', error);
+      console.error("Error al cerrar sesiones excedentes:", error);
     }
   }
 }

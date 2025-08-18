@@ -1,5 +1,5 @@
-const express = require('express');
-const ControladorMantenedores = require('../controladores/ControladorMantenedores');
+const express = require("express");
+const ControladorMantenedores = require("../controladores/ControladorMantenedores");
 
 const router = express.Router();
 
@@ -13,14 +13,14 @@ const router = express.Router();
  * @desc Obtiene resumen de todos los mantenedores
  * @access Privado
  */
-router.get('/', ControladorMantenedores.obtenerResumenMantenedores);
+router.get("/", ControladorMantenedores.obtenerResumenMantenedores);
 
 /**
  * @route GET /api/mantenedores/plantas
  * @desc Obtiene todas las plantas
  * @access Privado
  */
-router.get('/plantas', ControladorMantenedores.obtenerPlantas);
+router.get("/plantas", ControladorMantenedores.obtenerPlantas);
 
 /**
  * @route GET /api/mantenedores/materiales
@@ -28,7 +28,7 @@ router.get('/plantas', ControladorMantenedores.obtenerPlantas);
  * @access Privado
  * @query {boolean} activo - Filtrar por estado activo (default: true)
  */
-router.get('/materiales', ControladorMantenedores.obtenerMateriales);
+router.get("/materiales", ControladorMantenedores.obtenerMateriales);
 
 /**
  * @route GET /api/mantenedores/materiales/codigo/:codigo
@@ -36,7 +36,10 @@ router.get('/materiales', ControladorMantenedores.obtenerMateriales);
  * @access Privado
  * @param {string} codigo - Código del material
  */
-router.get('/materiales/codigo/:codigo', ControladorMantenedores.obtenerMaterialPorCodigo);
+router.get(
+  "/materiales/codigo/:codigo",
+  ControladorMantenedores.obtenerMaterialPorCodigo
+);
 
 /**
  * @route GET /api/mantenedores/proveedores
@@ -44,7 +47,7 @@ router.get('/materiales/codigo/:codigo', ControladorMantenedores.obtenerMaterial
  * @access Privado
  * @query {boolean} activo - Filtrar por estado activo (default: true)
  */
-router.get('/proveedores', ControladorMantenedores.obtenerProveedores);
+router.get("/proveedores", ControladorMantenedores.obtenerProveedores);
 
 /**
  * @route GET /api/mantenedores/proveedores/codigo/:codigo
@@ -52,7 +55,10 @@ router.get('/proveedores', ControladorMantenedores.obtenerProveedores);
  * @access Privado
  * @param {string} codigo - Código del proveedor
  */
-router.get('/proveedores/codigo/:codigo', ControladorMantenedores.obtenerProveedorPorCodigo);
+router.get(
+  "/proveedores/codigo/:codigo",
+  ControladorMantenedores.obtenerProveedorPorCodigo
+);
 
 /**
  * @route GET /api/mantenedores/ubicaciones
@@ -60,7 +66,7 @@ router.get('/proveedores/codigo/:codigo', ControladorMantenedores.obtenerProveed
  * @access Privado
  * @query {boolean} activo - Filtrar por estado activo (default: true)
  */
-router.get('/ubicaciones', ControladorMantenedores.obtenerUbicaciones);
+router.get("/ubicaciones", ControladorMantenedores.obtenerUbicaciones);
 
 /**
  * @route GET /api/mantenedores/ubicaciones/planta/:planta
@@ -69,21 +75,27 @@ router.get('/ubicaciones', ControladorMantenedores.obtenerUbicaciones);
  * @param {string} planta - Código de la planta
  * @query {boolean} activo - Filtrar por estado activo (default: true)
  */
-router.get('/ubicaciones/planta/:planta', ControladorMantenedores.obtenerUbicacionesPorPlanta);
+router.get(
+  "/ubicaciones/planta/:planta",
+  ControladorMantenedores.obtenerUbicacionesPorPlanta
+);
 
 /**
  * @route GET /api/mantenedores/temporadas
  * @desc Obtiene todas las temporadas
  * @access Privado
  */
-router.get('/temporadas', ControladorMantenedores.obtenerTemporadas);
+router.get("/temporadas", ControladorMantenedores.obtenerTemporadas);
 
 /**
  * @route GET /api/mantenedores/temporadas/activa
  * @desc Obtiene la temporada activa
  * @access Privado
  */
-router.get('/temporadas/activa', ControladorMantenedores.obtenerTemporadaActiva);
+router.get(
+  "/temporadas/activa",
+  ControladorMantenedores.obtenerTemporadaActiva
+);
 
 /**
  * @route GET /api/mantenedores/tipos-movimiento
@@ -91,13 +103,52 @@ router.get('/temporadas/activa', ControladorMantenedores.obtenerTemporadaActiva)
  * @access Privado
  * @query {boolean} activo - Filtrar por estado activo (default: true)
  */
-router.get('/tipos-movimiento', ControladorMantenedores.obtenerTiposMovimiento);
+router.get("/tipos-movimiento", ControladorMantenedores.obtenerTiposMovimiento);
 
 /**
  * @route GET /api/mantenedores/unidades-medida
  * @desc Obtiene todas las unidades de medida
  * @access Privado
  */
-router.get('/unidades-medida', ControladorMantenedores.obtenerUnidadesMedida);
+router.get("/unidades-medida", ControladorMantenedores.obtenerUnidadesMedida);
+
+// ========================================
+// RUTAS POST PARA CREAR MANTENEDORES
+// ========================================
+
+/**
+ * @route POST /api/mantenedores/materiales
+ * @desc Crea un nuevo material
+ * @access Privado
+ */
+router.post("/materiales", ControladorMantenedores.crearMaterial);
+
+/**
+ * @route POST /api/mantenedores/proveedores
+ * @desc Crea un nuevo proveedor
+ * @access Privado
+ */
+router.post("/proveedores", ControladorMantenedores.crearProveedor);
+
+/**
+ * @route POST /api/mantenedores/ubicaciones
+ * @desc Crea una nueva ubicación
+ * @access Privado
+ */
+router.post("/ubicaciones", ControladorMantenedores.crearUbicacion);
+
+/**
+ * @route POST /api/mantenedores/temporadas
+ * @desc Crea una nueva temporada
+ * @access Privado
+ */
+router.post("/temporadas", ControladorMantenedores.crearTemporada);
+
+/**
+ * @route POST /api/mantenedores/tipos-movimiento
+ * @desc Crea un nuevo tipo de movimiento
+ * @access Privado
+ */
+router.post("/tipos-movimiento", ControladorMantenedores.crearTipoMovimiento);
 
 module.exports = router;
