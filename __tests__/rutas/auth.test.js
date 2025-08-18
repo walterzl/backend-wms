@@ -4,14 +4,20 @@ const jwt = a= require('jsonwebtoken');
 const Servidor = require('../../src/servidor');
 const mockPrisma = require('../setup/singleton');
 
-// Mockear las dependencias externas
+// Mockear el cliente Prisma centralizado
+jest.mock('../../src/configuracion/prismaClient', () => require('../setup/singleton'));
+
+// Mockear otras dependencias externas
 jest.mock('bcrypt');
 jest.mock('jsonwebtoken');
 
-const servidor = new Servidor();
-const app = servidor.obtenerApp();
-
 describe('Rutas de Autenticación - /api/auth', () => {
+  let app;
+
+  beforeEach(() => {
+    const servidor = new Servidor();
+    app = servidor.obtenerApp();
+  });
 
   afterEach(() => {
     jest.clearAllMocks();

@@ -1,11 +1,9 @@
 const bcrypt = require("bcrypt");
-const { PrismaClient } = require("@prisma/client");
+const prisma = require("../configuracion/prismaClient");
 const middlewareAuth = require("../middleware/middlewareAuth");
 const ServicioValidacion = require("../servicios/ServicioValidacion");
 const configuracion = require("../configuracion/config");
 const CONSTANTES = require("../configuracion/constantes");
-
-const prisma = new PrismaClient();
 
 /**
  * Controlador de Autenticación

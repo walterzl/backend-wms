@@ -1,9 +1,7 @@
-const { PrismaClient } = require("@prisma/client");
+const prisma = require("../configuracion/prismaClient");
 const CONSTANTES = require("../configuracion/constantes");
 const ManejadorRespuestas = require("../utilidades/ManejadorRespuestas");
 const ServicioBaseCRUD = require("../servicios/ServicioBaseCRUD");
-
-const prisma = new PrismaClient();
 
 /**
  * Controlador de Mantenedores - APIs Centralizadas

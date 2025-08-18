@@ -27,6 +27,7 @@ const rutasOperacionesFrioDespacho = require("./rutas/rutasOperacionesFrioDespac
 const rutasRecepcionesLotes = require("./rutas/rutasRecepcionesLotes");
 const rutasStockUbicaciones = require("./rutas/rutasStockUbicaciones");
 const rutasTarjas = require("./rutas/rutasTarjas");
+const rutasEventos = require("./rutas/rutasEventos");
 
 /**
  * Clase principal del servidor Express
@@ -160,6 +161,7 @@ class Servidor {
           recepcionesLotes: "/api/recepciones-lotes",
           stockUbicaciones: "/api/stock-ubicaciones",
           tarjas: "/api/tarjas",
+          eventos: "/api/eventos",
         },
       });
     });
@@ -218,6 +220,7 @@ class Servidor {
     this.app.use("/api/recepciones-lotes", rutasRecepcionesLotes);
     this.app.use("/api/stock-ubicaciones", rutasStockUbicaciones);
     this.app.use("/api/tarjas", rutasTarjas);
+    this.app.use("/api/eventos", rutasEventos);
 
     // Ruta para archivos estáticos (uploads, reportes, etc.)
     this.app.use("/uploads", express.static("uploads"));
